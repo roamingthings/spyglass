@@ -2,7 +2,7 @@ import libcamera
 from picamera2 import Picamera2
 
 
-def init_camera(
+def init_usb_camera(
         width: int,
         height: int,
         fps: int,
@@ -13,7 +13,7 @@ def init_camera(
 
     picam2 = Picamera2(camera_num)
 
-    controls = {'FrameRate': fps}
+    controls = {}
 
     if 'AfMode' in picam2.camera_controls:
         controls['AfMode'] = autofocus
@@ -23,6 +23,6 @@ def init_camera(
     else:
         print('Attached camera does not support autofocus')
 
-    picam2.configure(picam2.create_video_configuration(main={'size': (width, height)}, controls=controls))
+    picam2.configure(picam2.create_preview_configuration(main={'size': (width, height), 'format': 'MJPEG'}, controls=controls))
 
     return picam2

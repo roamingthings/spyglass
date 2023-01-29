@@ -7,8 +7,10 @@ import sys
 import libcamera
 import re
 from spyglass.camera import init_camera
+from spyglass.usbCamera import init_usb_camera
 from spyglass.server import StreamingOutput
 from spyglass.server import run_server
+from spyglass.usbServer import run_usb_server
 from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 
@@ -30,21 +32,37 @@ def main(args=None):
     width, height = split_resolution(parsed_args.resolution)
     stream_url = parsed_args.stream_url
     snapshot_url = parsed_args.snapshot_url
-    picam2 = init_camera(
-        width,
-        height,
-        parsed_args.fps,
-        parse_autofocus(parsed_args.autofocus),
-        parsed_args.lensposition,
-        parse_autofocus_speed(parsed_args.autofocusspeed))
+    is_usbcam = parsed_args.is_usbcam
 
-    output = StreamingOutput()
-    picam2.start_recording(MJPEGEncoder(), FileOutput(output))
-
-    try:
-        run_server(bind_address, port, output, stream_url, snapshot_url)
-    finally:
-        picam2.stop_recording()
+    if is_usbcam:
+        picam2 = init_usb_camera(
+                        width,
+                        height,
+                        parsed_args.fps,
+                        parse_autofocus(parsed_args.autofocus),
+                        parsed_args.lensposition,
+                        parse_autofocus_speed(parsed_args.autofocusspeed),
+                        parsed_args.camera_num)
+        try:
+            picam2.start()
+            run_usb_server(bind_address, port, picam2, stream_url, snapshot_url)
+        finally:
+            picam2.stop()
+    else:
+        picam2 = init_camera(
+                        width,
+                        height,
+                        parsed_args.fps,
+                        parse_autofocus(parsed_args.autofocus),
+                        parsed_args.lensposition,
+                        parse_autofocus_speed(parsed_args.autofocusspeed),
+                        parsed_args.camera_num)
+        try:
+            output = StreamingOutput()
+            picam2.start_recording(MJPEGEncoder(), FileOutput(output))
+            run_server(bind_address, port, output, stream_url, snapshot_url)
+        finally:
+            picam2.stop_recording()
 
 
 # region args parsers
@@ -114,6 +132,8 @@ def get_parser():
                              'Only used with Autofocus manual')
     parser.add_argument('-s', '--autofocusspeed', type=str, default='normal', choices=['normal', 'fast'],
                         help='Autofocus speed. Only used with Autofocus continuous')
+    parser.add_argument('-n', '--camera_num', type=int, default=0, help='Camera number to be used')
+    parser.add_argument('-u', '--is_usbcam', action='store_true', help='Make MJPEG USB-Cams usable. Only use if normal method doesn\'t work')
     return parser
 
 # endregion cli args
