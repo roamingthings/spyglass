@@ -39,13 +39,16 @@ def main(args=None):
         parse_autofocus_speed(parsed_args.autofocusspeed),
         parsed_args.upsidedown,
         parsed_args.flip_horizontal,
-        parsed_args.flip_vertical)
+        parsed_args.flip_vertical,
+        parsed_args.controls)
+
+    print('Available controls:\n'+str(picam2.camera_controls))
 
     output = StreamingOutput()
     picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
     try:
-        run_server(bind_address, port, output, stream_url, snapshot_url)
+        run_server(bind_address, port, picam2, output, stream_url, snapshot_url)
     finally:
         picam2.stop_recording()
 
@@ -123,6 +126,7 @@ def get_parser():
                         help='Mirror the image horizontally')
     parser.add_argument('-fv', '--flip_vertical', action='store_true', 
                         help='Mirror the image vertically')
+    parser.add_argument('-c', '--controls', default='{}', type=str, help='Define controls to start with spyglass')
     return parser
 
 # endregion cli args

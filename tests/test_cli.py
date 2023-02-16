@@ -15,6 +15,7 @@ DEFAULT_LENS_POSITION = 0.0
 DEFAULT_FPS = 15
 DEFAULT_AF_SPEED = AF_SPEED_ENUM_NORMAL
 DEFAULT_AUTOFOCUS_MODE = AF_MODE_ENUM_CONTINUOUS
+DEFAULT_CONTROLS = '{}'
 
 
 @pytest.fixture(autouse=True)
@@ -75,7 +76,8 @@ def test_init_camera_with_defaults():
         DEFAULT_AF_SPEED,
         DEFAULT_UPSIDE_DOWN,
         DEFAULT_FLIP_HORIZONTALLY,
-        DEFAULT_FLIP_VERTICALLY
+        DEFAULT_FLIP_VERTICALLY,
+        DEFAULT_CONTROLS
     )
 
 
@@ -94,7 +96,8 @@ def test_init_camera_resolution():
         DEFAULT_AF_SPEED,
         DEFAULT_UPSIDE_DOWN,
         DEFAULT_FLIP_HORIZONTALLY,
-        DEFAULT_FLIP_VERTICALLY
+        DEFAULT_FLIP_VERTICALLY,
+        DEFAULT_CONTROLS
     )
 
 
@@ -113,7 +116,8 @@ def test_init_camera_fps():
         DEFAULT_AF_SPEED,
         DEFAULT_UPSIDE_DOWN,
         DEFAULT_FLIP_HORIZONTALLY,
-        DEFAULT_FLIP_VERTICALLY
+        DEFAULT_FLIP_VERTICALLY,
+        DEFAULT_CONTROLS
     )
 
 
@@ -132,7 +136,8 @@ def test_init_camera_af_manual():
         DEFAULT_AF_SPEED,
         DEFAULT_UPSIDE_DOWN,
         DEFAULT_FLIP_HORIZONTALLY,
-        DEFAULT_FLIP_VERTICALLY
+        DEFAULT_FLIP_VERTICALLY,
+        DEFAULT_CONTROLS
     )
 
 
@@ -151,7 +156,8 @@ def test_init_camera_af_continuous():
         DEFAULT_AF_SPEED,
         DEFAULT_UPSIDE_DOWN,
         DEFAULT_FLIP_HORIZONTALLY,
-        DEFAULT_FLIP_VERTICALLY
+        DEFAULT_FLIP_VERTICALLY,
+        DEFAULT_CONTROLS
     )
 
 
@@ -170,7 +176,8 @@ def test_init_camera_lens_position():
         DEFAULT_AF_SPEED,
         DEFAULT_UPSIDE_DOWN,
         DEFAULT_FLIP_HORIZONTALLY,
-        DEFAULT_FLIP_VERTICALLY
+        DEFAULT_FLIP_VERTICALLY,
+        DEFAULT_CONTROLS
     )
 
 
@@ -189,7 +196,8 @@ def test_init_camera_af_speed_normal():
         AF_SPEED_ENUM_NORMAL,
         DEFAULT_UPSIDE_DOWN,
         DEFAULT_FLIP_HORIZONTALLY,
-        DEFAULT_FLIP_VERTICALLY
+        DEFAULT_FLIP_VERTICALLY,
+        DEFAULT_CONTROLS
     )
 
 
@@ -208,7 +216,8 @@ def test_init_camera_af_speed_fast():
         AF_SPEED_ENUM_FAST,
         DEFAULT_UPSIDE_DOWN,
         DEFAULT_FLIP_HORIZONTALLY,
-        DEFAULT_FLIP_VERTICALLY
+        DEFAULT_FLIP_VERTICALLY,
+        DEFAULT_CONTROLS
     )
 
 
@@ -227,7 +236,8 @@ def test_init_camera_upside_down():
         DEFAULT_AF_SPEED,
         True,
         DEFAULT_FLIP_HORIZONTALLY,
-        DEFAULT_FLIP_VERTICALLY
+        DEFAULT_FLIP_VERTICALLY,
+        DEFAULT_CONTROLS
     )
 
 
@@ -246,7 +256,8 @@ def test_init_camera_flip_horizontal():
         DEFAULT_AF_SPEED,
         DEFAULT_UPSIDE_DOWN,
         True,
-        DEFAULT_FLIP_VERTICALLY
+        DEFAULT_FLIP_VERTICALLY,
+        DEFAULT_CONTROLS
     )
 
 
@@ -265,7 +276,28 @@ def test_init_camera_flip_vertical():
         DEFAULT_AF_SPEED,
         DEFAULT_UPSIDE_DOWN,
         DEFAULT_FLIP_HORIZONTALLY,
-        True
+        True,
+        DEFAULT_CONTROLS
+    )
+
+
+def test_init_camera_controls():
+    from spyglass import cli
+    import spyglass.camera
+    cli.main(args=[
+        '-c', '{"brightness": -0.4}'
+    ])
+    spyglass.camera.init_camera.assert_called_once_with(
+        DEFAULT_WIDTH,
+        DEFAULT_HEIGHT,
+        DEFAULT_FPS,
+        DEFAULT_AUTOFOCUS_MODE,
+        DEFAULT_LENS_POSITION,
+        DEFAULT_AF_SPEED,
+        DEFAULT_UPSIDE_DOWN,
+        DEFAULT_FLIP_HORIZONTALLY,
+        DEFAULT_FLIP_VERTICALLY,
+        '{"brightness": -0.4}'
     )
 
 
@@ -278,4 +310,4 @@ def test_run_server_with_configuration_from_arguments():
         '-st', 'streaming-url',
         '-sn', 'snapshot-url'
     ])
-    spyglass.server.run_server.assert_called_once_with('1.2.3.4', 1234, ANY, 'streaming-url', 'snapshot-url')
+    spyglass.server.run_server.assert_called_once_with('1.2.3.4', 1234, ANY, ANY, 'streaming-url', 'snapshot-url')
