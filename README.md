@@ -38,18 +38,22 @@ This will start the server with the following default configuration:
 
 On startup the following arguments are supported:
 
-| Argument                 | Description                                                                                         | Default      |
-| ------------------------ | --------------------------------------------------------------------------------------------------- | ------------ |
-| `-b`, `--bindaddress`    | Address where the server will listen for new incoming connections.                                  | `0.0.0.0`    |
-| `-p`, `--port`           | Port where the server will listen for new incoming connections.                                     | `8080`       |
-| `-r`, `--resolution`     | Resolution of the captured frames. This argument expects the format <width>x<height>                | `640x480`    |
-| `-f`, `--fps`            | Framerate in frames per second (fps).                                                               | `15`         |
-| `-st`, `--stream_url`    | Sets the URL for the mjpeg stream.                                                                  | `/stream`    |
-| `-sn`, `--snapshot_url`  | Sets the URL for snapshots (single frame of stream).                                                | `/snapshot`  |
-| `-af`, `--autofocus`     | Autofocus mode. Supported modes: `manual`, `continuous`                                              | `continuous` |
-| `-l`, `--lensposition`   | Set focal distance. 0 for infinite focus, 0.5 for approximate 50cm. Only used with Autofocus manual | `0.0`        |
-| `-s`, `--autofocusspeed` | Autofocus speed. Supported values: `normal`, `fast`. Only used with Autofocus continuous            | `normal`     |
-
+| Argument                   | Description                                                                                         | Default      |
+|----------------------------|-----------------------------------------------------------------------------------------------------|--------------|
+| `-b`, `--bindaddress`      | Address where the server will listen for new incoming connections.                                  | `0.0.0.0`    |
+| `-p`, `--port`             | Port where the server will listen for new incoming connections.                                     | `8080`       |
+| `-r`, `--resolution`       | Resolution of the captured frames. This argument expects the format <width>x<height>                | `640x480`    |
+| `-f`, `--fps`              | Framerate in frames per second (fps).                                                               | `15`         |
+| `-st`, `--stream_url`      | Sets the URL for the mjpeg stream.                                                                  | `/stream`    |
+| `-sn`, `--snapshot_url`    | Sets the URL for snapshots (single frame of stream).                                                | `/snapshot`  |
+| `-af`, `--autofocus`       | Autofocus mode. Supported modes: `manual`, `continuous`                                             | `continuous` |
+| `-l`, `--lensposition`     | Set focal distance. 0 for infinite focus, 0.5 for approximate 50cm. Only used with Autofocus manual | `0.0`        |
+| `-s`, `--autofocusspeed`   | Autofocus speed. Supported values: `normal`, `fast`. Only used with Autofocus continuous            | `normal`     |
+| `-s`, `--autofocusspeed`   | Autofocus speed. Supported values: `normal`, `fast`. Only used with Autofocus continuous            | `normal`     |
+| `-ud` `--upsidedown`       | Rotate the image by 180° (see below)                                                                |              |
+| `-fh` `--flip_horizontal`  | Mirror the image horizontally (see below)                                                           |              |
+| `-fv` `--flip_vertical`    | Mirror the image vertically (see below)                                                             |              |
+| `-or` `--orientation_exif` | Set the image orientation using an EXIF header (see below)                                          |              |
 Starting the server without any argument is the same as
 
 ```shell
@@ -63,6 +67,33 @@ The stream can then be accessed at `http://<IP of the server>:8080/stream`
 Please note that the maximum recommended resolution is 1920x1080 (16:9).
 
 The absolute maximum resolution is 1920x1920. If you choose a higher resolution spyglass may crash.
+
+### Image Orientation
+
+There are two ways to change the image orientation.
+
+To use the ability of picamera2 to transform the image you can use the following options when starting spyglass:
+ * `-ud` or `--upsidedown` - Rotate the image by 180°
+ * `-fh` or `--flip_horizontal` - Mirror the image horizontally
+ * `-fv` or `--flip_vertical` - Mirror the image vertically
+
+Alternatively you can create an EXIF header to modify the image orientation. Most modern browsers should respect the
+this header.
+
+Use the `-or` or `--orientation_exif` option and choose from one of the following orientations
+ * `h` - Horizontal (normal)
+ * `mh` - Mirror horizontal
+ * `r180` - Rotate 180
+ * `mv` - Mirror vertical
+ * `mhr270` - Mirror horizontal and rotate 270 CW
+ * `r90` - Rotate 90 CW
+ * `mhr90` - Mirror horizontal and rotate 90 CW
+ * `r270` - Rotate 270 CW
+
+For example to rotate the image 90 degree clockwise you would start spyglass the following way:
+```shell
+./run.py -or r90
+```
 
 ## Using Spyglass with Mainsail
 

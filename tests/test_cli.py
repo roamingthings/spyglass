@@ -1,6 +1,6 @@
 import argparse
 import pytest
-from unittest.mock import MagicMock, ANY
+from unittest.mock import MagicMock, ANY, patch
 
 AF_SPEED_ENUM_NORMAL = 1
 AF_SPEED_ENUM_FAST = 2
@@ -34,8 +34,6 @@ def mock_libraries(mocker):
     mocker.patch('libcamera.controls.AfModeEnum.Continuous', AF_MODE_ENUM_CONTINUOUS)
     mocker.patch('libcamera.controls.AfSpeedEnum.Normal', AF_SPEED_ENUM_NORMAL)
     mocker.patch('libcamera.controls.AfSpeedEnum.Fast', AF_SPEED_ENUM_FAST)
-    mocker.patch('spyglass.camera.init_camera')
-    mocker.patch('spyglass.server.run_server')
 
 
 def test_parse_bindaddress():
@@ -63,7 +61,9 @@ def test_split_resolution():
     assert height == 200
 
 
-def test_init_camera_with_defaults():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_with_defaults(mock_spyglass_camera, mock_spyglass_server):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[])
@@ -80,7 +80,9 @@ def test_init_camera_with_defaults():
     )
 
 
-def test_init_camera_resolution():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_resolution(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[
@@ -101,7 +103,6 @@ def test_init_camera_resolution():
 
 def test_raise_error_when_width_greater_than_maximum():
     from spyglass import cli
-    # import spyglass.camera
     with pytest.raises(argparse.ArgumentTypeError):
         cli.main(args=[
             '-r', '1921x1920'
@@ -110,14 +111,15 @@ def test_raise_error_when_width_greater_than_maximum():
 
 def test_raise_error_when_height_greater_than_maximum():
     from spyglass import cli
-    # import spyglass.camera
     with pytest.raises(argparse.ArgumentTypeError):
         cli.main(args=[
             '-r', '1920x1921'
         ])
 
 
-def test_init_camera_fps():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_fps(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[
@@ -136,7 +138,9 @@ def test_init_camera_fps():
     )
 
 
-def test_init_camera_af_manual():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_af_manual(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[
@@ -155,7 +159,9 @@ def test_init_camera_af_manual():
     )
 
 
-def test_init_camera_af_continuous():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_af_continuous(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[
@@ -174,7 +180,9 @@ def test_init_camera_af_continuous():
     )
 
 
-def test_init_camera_lens_position():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_lens_position(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[
@@ -193,7 +201,9 @@ def test_init_camera_lens_position():
     )
 
 
-def test_init_camera_af_speed_normal():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_af_speed_normal(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[
@@ -212,7 +222,9 @@ def test_init_camera_af_speed_normal():
     )
 
 
-def test_init_camera_af_speed_fast():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_af_speed_fast(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[
@@ -231,7 +243,9 @@ def test_init_camera_af_speed_fast():
     )
 
 
-def test_init_camera_upside_down():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_upside_down(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[
@@ -250,7 +264,9 @@ def test_init_camera_upside_down():
     )
 
 
-def test_init_camera_flip_horizontal():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_flip_horizontal(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[
@@ -269,7 +285,9 @@ def test_init_camera_flip_horizontal():
     )
 
 
-def test_init_camera_flip_vertical():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_init_camera_flip_vertical(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.camera
     cli.main(args=[
@@ -288,14 +306,48 @@ def test_init_camera_flip_vertical():
     )
 
 
-def test_run_server_with_configuration_from_arguments():
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+def test_run_server_with_configuration_from_arguments(mock_spyglass_server, mock_spyglass_camera):
     from spyglass import cli
     import spyglass.server
     cli.main(args=[
         '-b', '1.2.3.4',
         '-p', '1234',
         '-st', 'streaming-url',
-        '-sn', 'snapshot-url'
+        '-sn', 'snapshot-url',
+        '-or', 'h'
     ])
-    spyglass.server.run_server.assert_called_once_with('1.2.3.4', 1234, ANY, 'streaming-url', 'snapshot-url')
+    spyglass.server.run_server.assert_called_once_with('1.2.3.4', 1234, ANY, 'streaming-url', 'snapshot-url', 1)
 
+
+@patch("spyglass.server.run_server")
+@patch("spyglass.camera.init_camera")
+@pytest.mark.parametrize("input_value, expected_output", [
+    ('h', 1),
+    ('mh', 2),
+    ('r180', 3),
+    ('mv', 4),
+    ('mhr270', 5),
+    ('r90', 6),
+    ('mhr90', 7),
+    ('r270', 8),
+])
+def test_run_server_with_orientation(mock_spyglass_server, mock_spyglass_camera, input_value, expected_output):
+    from spyglass import cli
+    import spyglass.server
+    cli.main(args=[
+        '-b', '1.2.3.4',
+        '-p', '1234',
+        '-st', 'streaming-url',
+        '-sn', 'snapshot-url',
+        '-or', input_value
+    ])
+    spyglass.server.run_server.assert_called_once_with(
+        '1.2.3.4',
+        1234,
+        ANY,
+        'streaming-url',
+        'snapshot-url',
+        expected_output
+    )
