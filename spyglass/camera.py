@@ -1,6 +1,6 @@
 import libcamera
+from spyglass.camera_options import process_controls
 from picamera2 import Picamera2
-
 
 def init_camera(
         width: int,
@@ -12,6 +12,7 @@ def init_camera(
         upsidedown=False,
         flip_horizontal=False,
         flip_vertical=False,
+        control_list: list[list[str]]=[],
         tuning_filter=None,
         tuning_filter_dir=None):
 
@@ -25,6 +26,9 @@ def init_camera(
 
     picam2 = Picamera2(tuning=tuning)
     controls = {'FrameRate': fps}
+
+    c = process_controls(picam2, [tuple(ctrl) for ctrl in control_list])
+    controls.update(c)
 
     if 'AfMode' in picam2.camera_controls:
         controls['AfMode'] = autofocus

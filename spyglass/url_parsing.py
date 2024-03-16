@@ -20,10 +20,16 @@ def check_paths_match(expected_url, incoming_url):
 
     return False
 
+def get_url_params(url):
+    # Get URL params
+    params = parse_qsl(urlparse(url).query)
+
+    return params
+
 def check_params_match(expected_url, incoming_url):
     # Check URL params
-    exp_params = parse_qsl(urlparse(expected_url).query)
-    inc_params = parse_qsl(urlparse(incoming_url).query)
+    exp_params = get_url_params(expected_url)
+    inc_params = get_url_params(incoming_url)
 
     # Create list of matching params
     matching_params = set(exp_params) & set(inc_params)

@@ -8,6 +8,7 @@ import re
 import sys
 
 import libcamera
+
 from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 
@@ -16,6 +17,8 @@ from spyglass.__version__ import __version__
 from spyglass.camera import init_camera
 from spyglass.server import StreamingOutput
 from spyglass.server import run_server
+from spyglass import camera_options
+
 
 MAX_WIDTH = 1920
 MAX_HEIGHT = 1920
@@ -41,6 +44,13 @@ def main(args=None):
     stream_url = parsed_args.stream_url
     snapshot_url = parsed_args.snapshot_url
     orientation_exif = parsed_args.orientation_exif
+    controls = parsed_args.controls
+    if parsed_args.controls_string:
+        controls += [c.split('=') for c in parsed_args.controls_string.split(',')]
+    if parsed_args.list_controls:
+        print('Available controls:\n'+camera_options.get_libcamera_controls_string(0))
+        return
+
     picam2 = init_camera(
         width,
         height,
@@ -51,6 +61,7 @@ def main(args=None):
         parsed_args.upsidedown,
         parsed_args.flip_horizontal,
         parsed_args.flip_vertical,
+        parsed_args.controls,
         parsed_args.tuning_filter,
         parsed_args.tuning_filter_dir)
 
@@ -58,7 +69,7 @@ def main(args=None):
     picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
     try:
-        run_server(bind_address, port, output, stream_url, snapshot_url, orientation_exif)
+        run_server(bind_address, port, picam2, output, stream_url, snapshot_url, orientation_exif)
     finally:
         picam2.stop_recording()
 
@@ -158,10 +169,26 @@ def get_parser():
                              '  mhr90  - Mirror horizontal and rotate 90 CW\n'
                              '  r270   - Rotate 270 CW'
                         )
+    parser.add_argument('-c', '--controls', default=[], type=control_type, action='extend', nargs='*',
+                        help='Define camera controls to start with spyglass. '
+                             'Can be used multiple times.\n'
+                             'Format: <control>=<value>')
+    parser.add_argument('-cs', '--controls-string', default='', type=str,
+                        help='Define camera controls to start with spyglass. '
+                             'Input as a long string.\n'
+                             'Format: <control1>=<value1> <control2>=<value2>')
     parser.add_argument('-tf', '--tuning_filter', type=str, default=None, nargs='?', const="",
                         help='Set a tuning filter file name.')
     parser.add_argument('-tfd', '--tuning_filter_dir', type=str, default=None, nargs='?',const="",
                         help='Set the directory to look for tuning filters.')
+    parser.add_argument('--list-controls', action='store_true', help='List available camera controls and exits.')
+
     return parser
+
+def control_type(arg_value: str):
+    if '=' in arg_value:
+        return arg_value.split('=')
+    else:
+        raise argparse.ArgumentTypeError(f"Invalid control: Missing value: {arg_value}")
 
 # endregion cli args

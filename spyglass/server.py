@@ -3,8 +3,9 @@ import logging
 import socketserver
 from http import server
 from threading import Condition
-from spyglass.url_parsing import check_urls_match
+from spyglass.url_parsing import check_urls_match, get_url_params
 from spyglass.exif import create_exif_header
+from spyglass.camera_options import parse_dictionary_to_html_page, process_controls
 from . import logger
 
 
@@ -24,7 +25,13 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     daemon_threads = True
 
 
-def run_server(bind_address, port, output, stream_url='/stream', snapshot_url='/snapshot', orientation_exif=0):
+def run_server(bind_address,
+               port,
+               camera,
+               output: StreamingOutput,
+               stream_url='/stream',
+               snapshot_url='/snapshot',
+               orientation_exif=0):
     exif_header = create_exif_header(orientation_exif)
 
     class StreamingHandler(server.BaseHTTPRequestHandler):
@@ -33,6 +40,17 @@ def run_server(bind_address, port, output, stream_url='/stream', snapshot_url='/
                 self.start_streaming()
             elif check_urls_match(snapshot_url, self.path):
                 self.send_snapshot()
+            elif check_urls_match('/controls', self.path):
+                parsed_controls = get_url_params(self.path)
+                parsed_controls = parsed_controls if parsed_controls else None
+                processed_controls = process_controls(camera, parsed_controls)
+                camera.set_controls(processed_controls)
+                content = parse_dictionary_to_html_page(camera, parsed_controls, processed_controls).encode('utf-8')
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html')
+                self.send_header('Content-Length', len(content))
+                self.end_headers()
+                self.wfile.write(content)
             else:
                 self.send_error(404)
                 self.end_headers()
@@ -95,6 +113,7 @@ def run_server(bind_address, port, output, stream_url='/stream', snapshot_url='/
     logger.info('Server listening on %s:%d', bind_address, port)
     logger.info('Streaming endpoint: %s', stream_url)
     logger.info('Snapshot endpoint: %s', snapshot_url)
+    logger.info('Controls endpoint: %s', '/controls')
     address = (bind_address, port)
     current_server = StreamingServer(address, StreamingHandler)
     current_server.serve_forever()
