@@ -84,8 +84,10 @@ def get_libcamera_controls_string(camera_path: str) -> str:
     ctrls_str = ""
     libcam_cm = libcamera.CameraManager.singleton()
     cam = libcam_cm.cameras[0]
+
     def rectangle_to_tuple(rectangle):
         return (rectangle.x, rectangle.y, rectangle.width, rectangle.height)
+
     for k, v in cam.controls.items():
         if isinstance(v.min, libcamera.Rectangle):
             min = rectangle_to_tuple(v.min)
