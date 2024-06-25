@@ -133,6 +133,8 @@ If you want to install Spyglass globally on your machine you can use `python -m 
 Quite simple:
 
 ```bash
+cd ~
+git clone https://github.com/roamingthings/spyglass
 cd ~/spyglass
 make install
 ```
