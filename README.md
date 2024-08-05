@@ -57,11 +57,12 @@ On startup the following arguments are supported:
 | `--list-controls`             | List all available libcamera controls onto the console. Those can be used with `--controls`                                        |              |
 | `-tf`, `--tuning_filter`      | Set a tuning filter file name.                                                                                                     |              |
 | `-tfd`, `--tuning_filter_dir` | Set the directory to look for tuning filters.                                                                                      |              |
+| `-n`, `--camera_num`          | Camera number to be used. All cameras with their number can be shown with `libcamera-hello`.                                       | `0`          |
 
 Starting the server without any argument is the same as
 
 ```shell
-./run.py -b 0.0.0.0 -p 8080 -r 640x480 -f 15 -st '/stream' -sn '/snapshot' -af continuous -l 0.0 -s normal
+./run.py -b 0.0.0.0 -p 8080 -r 640x480 -f 15 -st '/stream' -sn '/snapshot' -af continuous -l 0.0 -s normal -n 0
 ```
 
 The stream can then be accessed at `http://<IP of the server>:8080/stream`
